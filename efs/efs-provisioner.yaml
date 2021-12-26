@@ -1,0 +1,36 @@
+kind: Deployment 
+apiVersion: apps/v1
+metadata:
+  name: efs-provisioner
+  labels:
+    app: efs-provisioner
+spec:
+  selector:
+    matchLabels:
+      app: efs-provisioner
+  replicas: 1
+  strategy: 
+    type: Recreate
+  template: 
+    metadata: 
+      labels:
+        app: efs-provisioner
+    spec:
+      containers:
+        - name: efs-provisioner
+          image: quay.io/external_storage/efs-provisioner:v0.1.0
+          env: 
+            - name: FILE_SYSTEM_ID
+              value: fs-0eb5ea6c9dfdd1c45
+            - name: AWS_REGION
+              value: us-east-2
+            - name: PROVISIONER_NAME
+              value: efs-sharks/Sharks-EKS-cluster
+          volumeMounts:
+            - name: pv-volume
+              mountPath: /persistentvolumes
+      volumes:
+        - name: pv-volume
+          nfs: 
+            server: fs-0eb5ea6c9dfdd1c45.efs.us-east-2.amazonaws.com
+            path: /

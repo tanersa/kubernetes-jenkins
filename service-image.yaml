@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service 
+metadata:
+  name: tomcat-service
+  labels:
+    app: tomcat-deployment
+  spec:
+    selector:
+      app: tomcat-deployment
+    type: LoadBalancer
+    ports:
+    - port: 8080
+      targetPort: 8080
+      nodePort: 31200

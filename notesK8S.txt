@@ -1,0 +1,31 @@
+12/11/2021  Kubernetes (EKS)
+
+1) aws configure 
+2) create EKS role in AWS Console 
+3) Install eksctl 
+curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
+sudo mv /tmp/eksctl /usr/local/bin
+4) Install kubectl 
+curl -o kubectl https://amazon-eks.s3.us-west-2.amazonaws.com/1.21.2/2021-07-05/bin/linux/amd64/kubectl
+chmod +x ./kubectl
+mkdir -p $HOME/bin && cp ./kubectl $HOME/bin/kubectl && export PATH=$PATH:$HOME/bin
+kubectl version --client --short
+5) eksctl create cluster -f eks-cluster.yaml 
+6) Difference between PODS and DEPLOYMENT --> DEPLOYMENT is HA. 
+7) kubectl describe pod <pod_name>: Gives an output regarding pod for troubleshooting
+8) Delete DEPLOYMENT/Service --> kubectl delete -f <file_name>
+9) Delete K8S Cluster --> eksctl delete cluster -f <cluster_config_file>
+
+4. DOWNLOAD_URL=$(curl --silent "https://api.github.com/repos/kubernetes-sigs/metrics-server/releases/latest" | jq -r .tarball_url)
+5. curl -Ls $DOWNLOAD_URL -o metrics-server-$DOWNLOAD_VERSION.tar.gz
+6. mkdir metrics-server-$DOWNLOAD_VERSION
+7. tar -xzf metrics-server-$DOWNLOAD_VERSION.tar.gz --directory metrics-server-$DOWNLOAD_VERSION --strip-components 1
+8. kubectl apply -f metrics-server-$DOWNLOAD_VERSION/deploy/1.8+/
+9. kubectl get deployment metrics-server -n kube-system
+
+
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/$DASHBOARD_RELEASE/aio/deploy/recommended.yaml
+
+http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/.
+
+eyJhbGciOiJSUzI1NiIsImtpZCI6IkRkSThkZG1sUk9Hc0tRMGJlODYyQUEyY3NWcVBzcHA2M1JLX1JqUFZmaHMifQ.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9uYW1lc3BhY2UiOiJrdWJlLXN5c3RlbSIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VjcmV0Lm5hbWUiOiJla3Mtc2hhcmtzLWFkbWluLXRva2VuLTVjMjQyIiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9zZXJ2aWNlLWFjY291bnQubmFtZSI6ImVrcy1zaGFya3MtYWRtaW4iLCJrdWJlcm5ldGVzLmlvL3NlcnZpY2VhY2NvdW50L3NlcnZpY2UtYWNjb3VudC51aWQiOiI4ZTRhMjFkYi0xNzdmLTRkODctOTJiOS1mZDA2MTRmZTQ2MGMiLCJzdWIiOiJzeXN0ZW06c2VydmljZWFjY291bnQ6a3ViZS1zeXN0ZW06ZWtzLXNoYXJrcy1hZG1pbiJ9.WdvqgNugEY2tBA4QdaEOH2eNT95cFcUBhFV6pYR2Khyoje95jbvJNS88PKsKpEF86ZaRxxwpnMZNbNItTLkT34Cz47eiwlb1A36Hvp8tDTXXcbIpB8R5S7bmWbfwfl2D__ajpwIlwO6f3wvw2yHMPl5oHPeqqpWrV5LdgQEDF9lZUxVWXvzQx1_Lm9guwNGfqW0D2plKfXLe0Q4SC4WWdtQzr3gPSMPUnzf9K7gA0f3blHCem9xEw1x5DCvopSsQUvKlcoth0EdxWUbNGDHgZIyOS5ApLxRYYmQyGoSjzfRnOBTJxsBq6HxwSn37lYqO_kyFH2cC60wdiH3td6a2NQ
