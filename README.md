@@ -196,7 +196,7 @@ Here, we are going to give our permissions using **create-rbac.yaml** manifest f
                
                       It worked!
                       
-Lets create **deploy-mysql.yaml** and **deploy-wordpress.yaml** files
+Lets create **deploy-mysql.yaml** and **deploy-wp.yaml** files
 
                deploy-mysql.yaml
                
@@ -255,7 +255,77 @@ Lets create **deploy-mysql.yaml** and **deploy-wordpress.yaml** files
                        persistentVolumeClaim:
                          claimName: efs-mysql
 
+              ----------------
 
+               deploy-wp.yaml
+               
+               apiVersion: v1
+               kind: Service 
+               metadata:
+                 name: wordpress
+                 labels:
+                   app: wordpress
+               spec:
+                 ports:
+                   - port: 80
+                 selector:
+                   app: wordpress
+                   tier: frontend
+                 type: LoadBalancer
+
+               ---
+               apiVersion: apps/v1
+               kind: Deployment
+               metadata:
+                 name: wordpress
+                 labels:
+                   app: wordpress
+               spec: 
+                 selector:
+                   matchLabels:
+                     app: wordpress
+                     tier: frontend
+                 strategy:
+                   type: Recreate
+                 template:
+                   metadata:
+                     labels: 
+                       app: wordpress
+                       tier: frontend
+                   spec:
+                     containers:
+                     - image: wordpress:4.8-apache
+                       name: wordpress
+                       env:
+                       - name: WORDPRESS_DB_HOST
+                         value: wordpress-mysql
+                       - name: WORDPRESS_DB_PASSWORD
+                         valueFrom:
+                           secretKeyRef:
+                             name: mysql-pass
+                             key: password
+                       ports:
+                       - containerPort: 80
+                         name: wordpress
+                       volumeMounts:
+                       - name: wordpress-persistent-storage
+                         mountPath: /var/www/html
+                     volumes: 
+                     - name: wordpress-persistent-storage
+                       persistentVolumeClaim:
+                         claimName: efs-wordpress
+      
+   -  Deploy deploy-mysql.yaml file
+  
+               kubectl apply -f deploy-mysql.yaml -n efs
+               kubectl get pvc -n efs
+               kubectl get po -n efs
+               kubectl get sc -n efs
+               
+               
+               
+               
+               
                
 
                              
