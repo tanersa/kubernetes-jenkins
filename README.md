@@ -1,4 +1,4 @@
-# EFS - Stateless/Statefull App - Nginx App with K8S
+# EFS - Stateless/Statefull App 
 
 ![alt text](https://github.com/tanersa/kubernetes-jenkins/blob/master/statefulstateless.jpg)
 
@@ -322,7 +322,10 @@ Lets create **deploy-mysql.yaml** and **deploy-wp.yaml** files
                kubectl get po -n efs
                kubectl get sc -n efs
                
-               
+**Verify if changes whether took place...**
+
+   Go to Load Balancer and check if everything is **healthy**.
+                   
                
                
                
