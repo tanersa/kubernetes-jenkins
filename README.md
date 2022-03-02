@@ -127,45 +127,146 @@ Here, we are going to give our permissions using **create-rbac.yaml** manifest f
                 
    -  Create **Storage Class** from this EFS.
 
-          storage-class.yaml
+             storage-class.yaml
 
-          kind: StorageClass
-          apiVersion: storage.k8s.io/v1
-          metadata:
-            name: aws-efs
-          provisioner: efs-sharks/Sharks-EKS_Cluster
-          
-          ---
+             kind: StorageClass
+             apiVersion: storage.k8s.io/v1
+             metadata:
+               name: aws-efs
+             provisioner: efs-sharks/Sharks-EKS_Cluster
+
+             ---
            
-         kind: PersistentVolumeClaim 
-         apiVersion: v1
-         metadata:
-           name: efs-wordpress
-           annotations:
-             volume.beta.kubernetes.io/storage-class: "aws-efs"
-         spec:
-           accessModes:
-             - ReadWriteMany
-           resources:
-             requests:
-               storage: 10Gi
+           
+            kind: PersistentVolumeClaim 
+            apiVersion: v1
+            metadata:
+              name: efs-wordpress
+              annotations:
+                volume.beta.kubernetes.io/storage-class: "aws-efs"
+            spec:
+              accessModes:
+                - ReadWriteMany
+              resources:
+                requests:
+                  storage: 10Gi
+
+             ---
+
+
+            kind: PersistentVolumeClaim 
+            apiVersion: v1
+            metadata:
+              name: efs-mysql
+              annotations:
+                volume.beta.kubernetes.io/storage-class: "aws-efs"
+            spec:
+              accessModes:
+                - ReadWriteMany
+              resources:
+                requests:
+                  storage: 10Gi
                
-          ---
-          
-         kind: PersistentVolumeClaim 
-         apiVersion: v1
-         metadata:
-           name: efs-mysql
-           annotations:
-             volume.beta.kubernetes.io/storage-class: "aws-efs"
-         spec:
-           accessModes:
-             - ReadWriteMany
-           resources:
-             requests:
-               storage: 10Gi
+   -  Deploy storage-class.yaml 
+
+               kubectl apply -f storage-class.yaml -n efs
+               
+                   storage class created
+                   persistent volume created
+                   persistent volume created
+                   
+   -  Verify your PVC is visible:
+
+               kubectl get pvc -n efs
+                  efs-mysql      PENDING     aws-efs
+                  efs-wordpress  PENDING     aws-efs
+                  
+               kubectl describe pvc efs-mysql -n efs
+               
+   -  ssh to the instance and run below CLI to see everything running or not.
+
+               sudo ls -a | /var/lib/kubelet/
+                    (Everything is running)
+                    
+**Note**: All PODs, Containers, StorageClasses, and more **ALWAYS** running in **KUBELET.**                    
+               
+   -  Go inside the pod (worker node) with below CLI.
+
+               kubectl exec -it efs-provisioner-622877cc828 -n efs sh
+               
+                      It worked!
+                      
+Lets create **deploy-mysql.yaml** and **deploy-wordpress.yaml** files
+
+               deploy-mysql.yaml
+               
+               apiVersion: v1
+               kind: Service 
+               metadata:
+                 name: wordpress-mysql
+                 labels:
+                   app: wordpress
+               spec:
+                 ports:
+                   - port: 3306
+                 selector:
+                   app: wordpress
+                   tier: mysql
+                 clusterIP: None 
+
+               ---
+               apiVersion: apps/v1
+               kind: Deployment 
+               metadata:
+                 name: wordpress-mysql
+                 labels:
+                   app: wordpress
+               spec:
+                 selector:
+                   matchLabels:
+                     app: wordpress
+                     tier: mysql
+                 strategy:
+                   type: Recreate
+                 template:
+
+                   metadata:
+                     labels:
+                       app: wordpress
+                       tier: mysql
+                   spec:
+                     containers:
+                     - image: mysql:5.6
+                       name: mysql
+                       env:
+                       - name: MYSQL_ROOT_PASSWORD
+                         valueFrom:
+                           secretKeyRef:
+                             name: mysql-pass
+                             key: password
+                       ports:
+                       - containerPort: 3306
+                         name: mysql
+                       volumeMounts:
+                       - name: mysql-persistent-storage
+                         mountPath: /var/lib/mysql
+                     volumes: 
+                     - name: mysql-persistent-storage
+                       persistentVolumeClaim:
+                         claimName: efs-mysql
+
+
+               
+
+                             
                
                
+
+              
+                  
+                  
+                  
+                  
           
                
           
