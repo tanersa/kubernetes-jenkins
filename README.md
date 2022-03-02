@@ -133,7 +133,40 @@ Here, we are going to give our permissions using **create-rbac.yaml** manifest f
           apiVersion: storage.k8s.io/v1
           metadata:
             name: aws-efs
-          provisioner: efs-sharks
+          provisioner: efs-sharks/Sharks-EKS_Cluster
+          
+          ---
+           
+         kind: PersistentVolumeClaim 
+         apiVersion: v1
+         metadata:
+           name: efs-wordpress
+           annotations:
+             volume.beta.kubernetes.io/storage-class: "aws-efs"
+         spec:
+           accessModes:
+             - ReadWriteMany
+           resources:
+             requests:
+               storage: 10Gi
+               
+          ---
+          
+         kind: PersistentVolumeClaim 
+         apiVersion: v1
+         metadata:
+           name: efs-mysql
+           annotations:
+             volume.beta.kubernetes.io/storage-class: "aws-efs"
+         spec:
+           accessModes:
+             - ReadWriteMany
+           resources:
+             requests:
+               storage: 10Gi
+               
+               
+          
                
           
           
