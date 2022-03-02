@@ -1,4 +1,4 @@
-# EFS - Stateless/Statefull App - Nginx App with K8S
+# EFS - Stateless/Statefull App 
 
 ![alt text](https://github.com/tanersa/kubernetes-jenkins/blob/master/statefulstateless.jpg)
 
@@ -127,13 +127,220 @@ Here, we are going to give our permissions using **create-rbac.yaml** manifest f
                 
    -  Create **Storage Class** from this EFS.
 
-          storage-class.yaml
+             storage-class.yaml
 
-          kind: StorageClass
-          apiVersion: storage.k8s.io/v1
-          metadata:
-            name: aws-efs
-          provisioner: efs-sharks
+             kind: StorageClass
+             apiVersion: storage.k8s.io/v1
+             metadata:
+               name: aws-efs
+             provisioner: efs-sharks/Sharks-EKS_Cluster
+
+             ---
+           
+           
+            kind: PersistentVolumeClaim 
+            apiVersion: v1
+            metadata:
+              name: efs-wordpress
+              annotations:
+                volume.beta.kubernetes.io/storage-class: "aws-efs"
+            spec:
+              accessModes:
+                - ReadWriteMany
+              resources:
+                requests:
+                  storage: 10Gi
+
+             ---
+
+
+            kind: PersistentVolumeClaim 
+            apiVersion: v1
+            metadata:
+              name: efs-mysql
+              annotations:
+                volume.beta.kubernetes.io/storage-class: "aws-efs"
+            spec:
+              accessModes:
+                - ReadWriteMany
+              resources:
+                requests:
+                  storage: 10Gi
+               
+   -  Deploy storage-class.yaml 
+
+               kubectl apply -f storage-class.yaml -n efs
+               
+                   storage class created
+                   persistent volume created
+                   persistent volume created
+                   
+   -  Verify your PVC is visible:
+
+               kubectl get pvc -n efs
+                  efs-mysql      PENDING     aws-efs
+                  efs-wordpress  PENDING     aws-efs
+                  
+               kubectl describe pvc efs-mysql -n efs
+               
+   -  ssh to the instance and run below CLI to see everything running or not.
+
+               sudo ls -a | /var/lib/kubelet/
+                    (Everything is running)
+                    
+**Note**: All PODs, Containers, StorageClasses, and more **ALWAYS** running in **KUBELET.**                    
+               
+   -  Go inside the pod (worker node) with below CLI.
+
+               kubectl exec -it efs-provisioner-622877cc828 -n efs sh
+               
+                      It worked!
+                      
+Lets create **deploy-mysql.yaml** and **deploy-wp.yaml** files
+
+               deploy-mysql.yaml
+               
+               apiVersion: v1
+               kind: Service 
+               metadata:
+                 name: wordpress-mysql
+                 labels:
+                   app: wordpress
+               spec:
+                 ports:
+                   - port: 3306
+                 selector:
+                   app: wordpress
+                   tier: mysql
+                 clusterIP: None 
+
+               ---
+               apiVersion: apps/v1
+               kind: Deployment 
+               metadata:
+                 name: wordpress-mysql
+                 labels:
+                   app: wordpress
+               spec:
+                 selector:
+                   matchLabels:
+                     app: wordpress
+                     tier: mysql
+                 strategy:
+                   type: Recreate
+                 template:
+
+                   metadata:
+                     labels:
+                       app: wordpress
+                       tier: mysql
+                   spec:
+                     containers:
+                     - image: mysql:5.6
+                       name: mysql
+                       env:
+                       - name: MYSQL_ROOT_PASSWORD
+                         valueFrom:
+                           secretKeyRef:
+                             name: mysql-pass
+                             key: password
+                       ports:
+                       - containerPort: 3306
+                         name: mysql
+                       volumeMounts:
+                       - name: mysql-persistent-storage
+                         mountPath: /var/lib/mysql
+                     volumes: 
+                     - name: mysql-persistent-storage
+                       persistentVolumeClaim:
+                         claimName: efs-mysql
+
+              ----------------
+
+               deploy-wp.yaml
+               
+               apiVersion: v1
+               kind: Service 
+               metadata:
+                 name: wordpress
+                 labels:
+                   app: wordpress
+               spec:
+                 ports:
+                   - port: 80
+                 selector:
+                   app: wordpress
+                   tier: frontend
+                 type: LoadBalancer
+
+               ---
+               apiVersion: apps/v1
+               kind: Deployment
+               metadata:
+                 name: wordpress
+                 labels:
+                   app: wordpress
+               spec: 
+                 selector:
+                   matchLabels:
+                     app: wordpress
+                     tier: frontend
+                 strategy:
+                   type: Recreate
+                 template:
+                   metadata:
+                     labels: 
+                       app: wordpress
+                       tier: frontend
+                   spec:
+                     containers:
+                     - image: wordpress:4.8-apache
+                       name: wordpress
+                       env:
+                       - name: WORDPRESS_DB_HOST
+                         value: wordpress-mysql
+                       - name: WORDPRESS_DB_PASSWORD
+                         valueFrom:
+                           secretKeyRef:
+                             name: mysql-pass
+                             key: password
+                       ports:
+                       - containerPort: 80
+                         name: wordpress
+                       volumeMounts:
+                       - name: wordpress-persistent-storage
+                         mountPath: /var/www/html
+                     volumes: 
+                     - name: wordpress-persistent-storage
+                       persistentVolumeClaim:
+                         claimName: efs-wordpress
+      
+   -  Deploy deploy-mysql.yaml file
+  
+               kubectl apply -f deploy-mysql.yaml -n efs
+               kubectl get pvc -n efs
+               kubectl get po -n efs
+               kubectl get sc -n efs
+               
+**Verify if changes whether took place...**
+
+   Go to Load Balancer and check if everything is **healthy**.
+                   
+               
+               
+               
+               
+
+                             
+               
+               
+
+              
+                  
+                  
+                  
+                  
+          
                
           
           
