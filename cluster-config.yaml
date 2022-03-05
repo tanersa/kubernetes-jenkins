@@ -12,5 +12,4 @@ nodeGroups:
     ssh:
       publicKeyName: eks
 
-
 Password1$
