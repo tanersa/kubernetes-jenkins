@@ -108,6 +108,7 @@ spec:
             server: fs-0eb5ea6c9dfdd1c45.efs.us-east-2.amazonaws.com
             path: /
 ---
+
 kind: StorageClass
 apiVersion: storage.k8s.io/v1
 metadata:
