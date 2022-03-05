@@ -23,7 +23,6 @@ kubectl version --client --short
 8. kubectl apply -f metrics-server-$DOWNLOAD_VERSION/deploy/1.8+/
 9. kubectl get deployment metrics-server -n kube-system
 
-
 kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/$DASHBOARD_RELEASE/aio/deploy/recommended.yaml
 
 http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/.
