@@ -675,6 +675,30 @@ Let's create now our persistent volumes:
    
             kubectl apply -f pvc.yaml -n sfull
             
+   To verify PVC creation:
+   
+            kubectl get pv -n sfull
+            
+   Now, we need to connect to DB
+   
+            mysql -u nkst -h wskubk -p 
+            
+   First of all, in order to connect to DB, we have to create a **secret**.      
+  
+   Let's create a secret in our namespace:
+  
+            kubectl create secret generic mysql-pass --from-literal=password=eks-course-mysql-pw -n sfull
+  
+   To see secret run below command but since our secret is encrypted, we wont be able to see the password:
+   
+            kubectl describe secret mysql-pass -n sfull
+            
+                  We can not see the pwd because its encrypted. 
+                  
+   Let's                  
+            
+            
+            
    
          
          
