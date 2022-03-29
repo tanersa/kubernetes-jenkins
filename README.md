@@ -834,9 +834,9 @@ Let's create now our persistent volumes:
    
    We would like to use PVC in **Statefulset**, so we dont want to delete them. Statefullset will give us a static POD name instead of random string all the time. We will always get **STATIC** pod name. We already know the number to see PVC of the POD. 
    
+
    -  Note: With statefulset, once we scale up our PODs, its going to create Persistent Volumes but we didnt see same result with deployment. If we deploy PODs on different worker nodes, these nodes will have persistent storage. 
-   
-   
+
             kind: Service 
             metadata:
               name: wordpress-mysql
