@@ -637,7 +637,44 @@ K8s uses thiss default storage classs to store Kubernetes related **configuratio
    
          kubectl patch storageclass statefull -p '{"metada":{"annotation":{"storageclass.kubernetes.io/is-default-class":"true"}}} -n sfull
          
-         
+Let's create now our persistent volumes:
+
+      pvc.yaml
+      
+      apiVersion: v1
+      kind: PersistentVolumeClaim
+      metadata:
+        name: mysql-pv-claim
+        labels:
+          app: wordpress
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 5Gi
+      --- 
+      apiVersion: v1
+      kind: PersistentVolumeClaim
+      metadata:
+        name: wp-pv-claim
+        labels:
+          app: wordpress
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 5Gi
+            
+   -  Note: We created two Persistent Volume Claims (PVC). One is for BackEnd and other one is for FrontEnd. 
+
+   We had accessModes as **ReadWriteOnce** because its EBS and EBS has limitation for only one **Availability Zone (AZ)**. 
+   
+   Deploy your persistent volume manifest yaml file as follows.
+   
+            kubectl apply -f pvc.yaml -n sfull
+            
    
          
          
