@@ -381,7 +381,81 @@ Lets create **deploy-mysql.yaml** and **deploy-wp.yaml** files
            
    -  Note: Whenever you don't specify your namespace, it will be deployed to default namespace. If yaml file is deployed to default namespace, this would create security risk because it would have easy access to others. 
 
-          
+        We created our POD for "redis" master, now we need to create **"Service"**     
+        
+        Services are like **firewalls** in Kubernetes.
+             
+        redis-service.yaml
+        
+            apiVersion: v1
+            kind: Service 
+            metadata:
+              name: redis-master 
+              labels:
+                app: redis 
+                role: master
+                tier: backend
+            spec:
+              ports:
+              - port: 6379
+                targetPort: 6379
+              selector:
+                app: redis 
+                role: master
+                tier: backend
+
+
+        To deploy to namespace you just created:
+        
+           kubectl apply -f redis-service.yml -n stless
+
+        To see all PODs, Deployments, and Replicasets in same namespace:
+        
+           kubectl get svc -n stless    
+           
+        **DEPLOYMENT KIND:** EC2 INSTANCES
+        
+        **SERVICE KIIND:** SECURITY GROUP / NETWORK
+        
+<br />
+
+   Just like creating RDS, we create Master and Stand By DBs. Therefore, we create slave dbs now.
+   
+        redis-slave.yml
+        
+         apiVersion: apps/v1
+         kind: Deployment 
+         metadata: 
+           name: redis-slave
+         spec:
+           selector:
+             matchLabels:
+               app: redis 
+               role: slave
+               tier: backend
+           replicas: 2
+           template:
+             metadata:
+               labels:
+                 app: redis 
+                 role: slave
+                 tier: backend
+             spec:
+               containers:
+               - name: slave
+                 image: gcr.io/google_samples/gb-redisslave:v1
+                 resources:
+                   requests:
+                     cpu: 100m
+                     memory: 100Mi
+                 env:
+                 - name: GET_HOSTS_FROM
+                   value: dns
+                 ports:
+                 - containerPort: 6379
+      
+                
+                
           
            
            
