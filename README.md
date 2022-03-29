@@ -496,7 +496,7 @@ Lets create **deploy-mysql.yaml** and **deploy-wp.yaml** files
             kubectl get svc -o wide -n stless
             
    Now, we need to create **front-end application** and deploy.
-   
+
             redis-frontend.yaml
             
             apiVersion: apps/v1
@@ -550,7 +550,12 @@ Lets create **deploy-mysql.yaml** and **deploy-wp.yaml** files
               selector:
                 app: guestbook
                 tier: frontend
-   
+                
+To deploy front-end app and service:
+         
+          kubectl apply -f redis-frontend.yaml -n stless
+          kubectl apply -f redis-frontend-service.yaml -n stless
+            
    
                 
           
