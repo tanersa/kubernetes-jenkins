@@ -555,6 +555,20 @@ To deploy front-end app and service:
          
           kubectl apply -f redis-frontend.yaml -n stless
           kubectl apply -f redis-frontend-service.yaml -n stless
+          
+To verify stateless app. go to AWS and Load Balancer:
+ 
+         Verify Load Balancer is created
+         
+         Check Instances
+         
+         Health Check
+         
+         Listeners
+         
+         Go to description and copy DNS name and paste it to your browser.
+         
+**Now, we deployed our first Stateless Application**         
             
    
                 
