@@ -546,6 +546,11 @@ Lets create **deploy-mysql.yaml** and **deploy-wp.yaml** files
               selector:
                 app: guestbook
                 tier: frontend
+                
+To deploy front-end app and service:
+         
+          kubectl apply -f redis-frontend.yaml -n stless
+          kubectl apply -f redis-frontend-service.yaml -n stless
             
    
                 
