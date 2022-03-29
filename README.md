@@ -486,17 +486,17 @@ Lets create **deploy-mysql.yaml** and **deploy-wp.yaml** files
                 app: redis 
                 role: slave
                 tier: backend
-
-   Apply service yaml file in stless namespace
+                
+   To deploy service...
    
             kubectl apply -f redis-slave-service.yaml -n stless
             
-   To verify service
+   To verify service...
    
             kubectl get svc -o wide -n stless
             
-   Next, we will deploy **front-end application** as follows...
-   
+   Now, we need to create **front-end application** and deploy.
+
             redis-frontend.yaml
             
             apiVersion: apps/v1
@@ -528,7 +528,11 @@ Lets create **deploy-mysql.yaml** and **deploy-wp.yaml** files
                     ports:
                     - containerPort: 80
                     
-   And the **service** as network
+   Deploy front-end app 
+   
+            kubectl apply -f redis-frontend.yaml -n stless
+            
+   Next, deploy front-end-service app
    
             redis-frontend-service.yaml
             
