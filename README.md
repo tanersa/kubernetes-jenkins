@@ -325,9 +325,76 @@ Lets create **deploy-mysql.yaml** and **deploy-wp.yaml** files
 **Verify if changes whether took place...**
 
    Go to Load Balancer and check if everything is **healthy**.
+   
+<br />   
                    
-               
-               
+**STATELESS APP**   
+
+&nbsp; &nbsp; K8s is **stateless** by default. Whenever we create a POD, we store data in the POD. This data is available only while POD is running. Once that POD crashes or fails, we would loss data as well. Therefore, PODs use ephemeral storage by default. 
+
+   -  **Deploying Stateless Application**
+           
+        Create a namespace for my deployment.
+           
+           kubectl create ns stless
+           kubectle get ns
+           
+        Create manifest yaml file for Deployment.
+        
+            apiVersion: apps/v1
+            kind: Deployment 
+            metadata:
+              name: redis-master 
+            spec:
+              selector:
+                matchLabels:
+                  app: redis 
+                  role: master
+                  tier: backend
+              replicas: 1
+              template:
+                metadata:
+                  labels:
+                    app: redis
+                    role: master
+                    tier: backend
+                spec:
+                  containers:
+                  - name: master
+                    image: k8s.gcr.io/redis:e2e
+                    resources:
+                      requests:
+                        cpu: 100m
+                        memory: 100Mi
+                    ports:
+                    - containerPort: 6379 
+
+   -  Note: If replicas value is not specified, there will be one replica of instance by default.
+
+        To deploy to namespace you just created:
+        
+           kubectl apply -f redis-master.yml -n stless
+
+        To see all PODs, Deployments, and Replicasets in same namespace:
+        
+           kubectl get all -n stless
+           
+   -  Note: Whenever you don't specify your namespace, it will be deployed to default namespace. If yaml file is deployed to default namespace, this would create security risk because it would have easy access to others. 
+
+          
+          
+           
+           
+
+
+        
+        
+           
+           
+
+   
+
+
                
                
 
