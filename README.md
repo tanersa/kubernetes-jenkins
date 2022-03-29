@@ -588,6 +588,18 @@ What happens is that **K8s Self Healing Mechanism** works perfect.
    
 However, data is gone because our application is **stateless**. We deleted worker node and once it's deleted, PODs get deleted as well. Therefore, we loose the data. 
 
+<br />
+
+**STATEFULL APPLICATION**
+
+&nbsp; &nbsp; Whenever it comes to statefull application, we are going to use persistent volumes (storages).
+
+For this purpose, AWS has **Elastic Block Storage (EBS)**
+
+   -  Note: Whenever we create EKS Cluster, it comes with a storage class. Default storage class is **gp2** in K8s.
+
+K8s uses thiss default storage classs to store Kubernetes related **configurations.** However, we do not use this default storage class to store data for our application. 
+
 
 
 
