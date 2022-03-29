@@ -695,18 +695,276 @@ Let's create now our persistent volumes:
             
                   We can not see the pwd because its encrypted. 
                   
-   Let's                  
-            
-            
-            
+   Let's create **service** and **deployment** for mysql
    
+            deploy-mysql.yaml
+   
+            apiVersion: v1
+            kind: Service 
+            metadata:
+              name: wordpress-mysql
+              labels:
+                app: wordpress
+            spec:
+              ports:
+                - port: 3306
+              selector:
+                app: wordpress
+                tier: mysql
+              clusterIP: None 
+
+            ---
+
+            apiVersion: apps/v1
+            kind: Deployment 
+            metadata:
+              name: wordpress-mysql
+              labels:
+                app: wordpress
+            spec:
+              selector:
+                matchLabels:
+                  app: wordpress
+                  tier: mysql
+              strategy:
+                type: Recreate
+              template:
+
+                metadata:
+                  labels:
+                    app: wordpress
+                    tier: mysql
+                spec:
+                  containers:
+                  - image: mysql:5.6
+                    name: mysql
+                    env:
+                    - name: MYSQL_ROOT_PASSWORD
+                      valueFrom:
+                        secretKeyRef:
+                          name: mysql-pass
+                          key: password
+                    ports:
+                    - containerPort: 3306
+                      name: mysql
+                    volumeMounts:
+                    - name: mysql-persistent-storage
+                      mountPath: /var/lib/mysql
+                  volumes: 
+                  - name: mysql-persistent-storage
+                    persistentVolumeClaim:
+                      claimName: mysql-pv-claim
+   
+            
+   Lets deploy service and deployment:
+   
+         kubectl apply -f deploy-mysql.yaml -n sfull
          
+   Now, deploy front-end application
+   
+         deploy-wordpress.yaml
+   
+         apiVersion: v1
+         kind: Service 
+         metadata:
+
+           name: wordpress
+           labels:
+             app: wordpress
+         spec:
+           ports:
+             - port: 80
+           selector:
+             app: wordpress
+             tier: frontend
+           type: LoadBalancer
+
+         ---
+         apiVersion: apps/v1
+         kind: Deployment
+         metadata:
+           name: wordpress
+           labels:
+             app: wordpress
+         spec: 
+           selector:
+             matchLabels:
+               app: wordpress
+               tier: frontend
+           strategy:
+             type: Recreate
+           template:
+             metadata:
+               labels: 
+                 app: wordpress
+                 tier: frontend
+             spec:
+               containers:
+               - image: wordpress:4.8-apache
+                 name: wordpress
+                 env:
+                 - name: WORDPRESS_DB_HOST
+                   value: wordpress-mysql
+                 - name: WORDPRESS_DB_PASSWORD
+                   valueFrom:
+                     secretKeyRef:
+                       name: mysql-pass
+                       key: password
+                 ports:
+                 - containerPort: 80
+                   name: wordpress
+                 volumeMounts:
+                 - name: wordpress-persistent-storage
+                   mountPath: /var/www/html
+               volumes: 
+               - name: wordpress-persistent-storage
+                 persistentVolumeClaim:
+                   claimName: wp-pv-claim
+                   
+                   
+   To check PVC:
+
+         kubectl get deploy -n sfull
          
-         
-         
-         
-         
-         
+   To verify on AWS Console:
+
+   Go to Load Balancer and verify whether its **active**
+   
+   We can also verify secrets on AWS Secret Manager. 
+   
+   We would like to use PVC in **Statefulset**, so we dont want to delete them. Statefullset will give us a static POD name instead of random string all the time.  
+   
+   For that, we deploy service and statefullset. 
+   
+           mysql-sts.yaml
+           
+            apiVersion: v1
+            kind: Service 
+            metadata:
+              name: wordpress-mysql
+              labels:
+                app: wordpress
+            spec:
+              ports:
+                - port: 3306
+              selector:
+                app: wordpress
+                tier: mysql
+              clusterIP: None 
+
+            --- 
+            apiVersion: apps/v1
+            kind: StatefulSet
+            metadata:
+              name: wordpress-mysql
+              labels: 
+                app: wordpress-statefulset
+            spec:
+              selector:
+                matchLabels:
+                  app: wordpress-statefulset
+                  tier: mysql
+              replicas: 1
+              serviceName: wordpress-statefulset-mysql
+              template:
+                metadata:
+                  labels: 
+                    app: wordpress-statefulset
+                    tier: mysql
+                spec:
+                  containers:
+                  - image: mysql:5.6
+                    name: mysql
+                    env:
+                    - name: MYSQL_ROOT_PASSWORD
+                      valueFrom:
+                        secretKeyRef:
+                          name: mysql-pass
+                          key: password
+                    volumeMounts:
+                    - name: mysql-persistent-storage
+                      mountPath: /var/lib/mysql
+                    ports:
+                    - containerPort: 3306
+                      name: mysql  
+                  volumes: 
+                  - name: mysql-persistent-storage
+                    persistentVolumeClaim:
+                      claimName: mysql-pv-claim      
+              volumeClaimTemplates:
+              - metadata:
+                  name: wordpress-statefulset-mysql
+                spec:
+                  accessModes:
+                    - ReadWriteOnce
+                  resources:
+                    requests:
+                      storage: 10Gi
+                  storageClassName: statefull
+
+                     apiVersion: v1
+            kind: Service 
+            metadata:
+              name: wordpress-mysql
+              labels:
+                app: wordpress
+            spec:
+              ports:
+                - port: 3306
+              selector:
+                app: wordpress
+                tier: mysql
+              clusterIP: None 
+
+            --- 
+            apiVersion: apps/v1
+            kind: StatefulSet
+            metadata:
+              name: wordpress-mysql
+              labels: 
+                app: wordpress-statefulset
+            spec:
+              selector:
+                matchLabels:
+                  app: wordpress-statefulset
+                  tier: mysql
+              replicas: 1
+              serviceName: wordpress-statefulset-mysql
+              template:
+                metadata:
+                  labels: 
+                    app: wordpress-statefulset
+                    tier: mysql
+                spec:
+                  containers:
+                  - image: mysql:5.6
+                    name: mysql
+                    env:
+                    - name: MYSQL_ROOT_PASSWORD
+                      valueFrom:
+                        secretKeyRef:
+                          name: mysql-pass
+                          key: password
+                    volumeMounts:
+                    - name: mysql-persistent-storage
+                      mountPath: /var/lib/mysql
+                    ports:
+                    - containerPort: 3306
+                      name: mysql  
+                  volumes: 
+                  - name: mysql-persistent-storage
+                    persistentVolumeClaim:
+                      claimName: mysql-pv-claim      
+              volumeClaimTemplates:
+              - metadata:
+                  name: wordpress-statefulset-mysql
+                spec:
+                  accessModes:
+                    - ReadWriteOnce
+                  resources:
+                    requests:
+                      storage: 10Gi
+                  storageClassName: statefull         
          
          
          
