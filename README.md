@@ -453,8 +453,41 @@ Lets create **deploy-mysql.yaml** and **deploy-wp.yaml** files
                    value: dns
                  ports:
                  - containerPort: 6379
+                 
       
-                
+   Deploy redis-slave yaml file to stless namespace
+        
+           kubectl apply -f redis.yml -n stless
+           
+   To see all DBs in stless app:
+   
+           kubectl get po -n stless
+           
+              redis-master
+              redis-slave
+              redis-slave
+              
+   Now, lets create a **"Service"** for redis-slave for having security group/network
+   
+           redis-slave-service.yaml
+           
+            apiVersion: v1
+            kind: Service 
+            metadata:
+              name: redis-slave
+              labels:
+                app: redis 
+                role: slave
+                tier: backend
+            spec:
+              ports:
+              - port: 6379
+              selector:
+                app: redis 
+                role: slave
+                tier: backend
+   
+   
                 
           
            
