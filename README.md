@@ -600,7 +600,60 @@ For this purpose, AWS has **Elastic Block Storage (EBS)**
 
 K8s uses thiss default storage classs to store Kubernetes related **configurations.** However, we do not use this default storage class to store data for our application. 
 
+   Lets create our first yaml file for storage class...
+   
+         storageclass.yaml
+         
+         kind: StorageClass
+         apiVersion: storage.k8s.io/v1
+         metadata:
+           name: statefull
+         provisioner: kubernetes.io/aws-ebs
+         parameters:
+           type: gp2
+         reclaimPolicy: Retain 
+         mountOptions: 
+           - debug 
+           
+   -  Note: As we give **Retain** value for  reclaimPolicy, we stated that even our POD goes down, we would like to keep this storage class so that will be **Persistent Storage** for us.    
 
+   Create new namespace for our **statefull storage class:**
+   
+         kubectl create ns sfull
+         
+   Deploy statefull application
+   
+         kubectl apply -f storageclass.yaml -n sfull
+         
+   Verify storage class creation
+   
+         kubectl get sc -n sfull
+         
+   We just created storage class but we did not create **persistent volume** yet. Now, we have to create persistent volumes from this storage class. 
+   
+   Currently, our default storage class is gp2 but we need to **patch** our own storage class as default one in order to create persistent volume in our custom storage class.   
+   
+   To patch sfull storage class as default storage class:
+   
+         kubectl patch storageclass statefull -p '{"metada":{"annotation":{"storageclass.kubernetes.io/is-default-class":"true"}}} -n sfull
+         
+         
+   
+         
+         
+         
+         
+         
+         
+         
+         
+         
+         
+         
+         
+         
+         
+         
 
 
 
