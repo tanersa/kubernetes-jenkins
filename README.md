@@ -486,6 +486,70 @@ Lets create **deploy-mysql.yaml** and **deploy-wp.yaml** files
                 app: redis 
                 role: slave
                 tier: backend
+                
+   To deploy service...
+   
+            kubectl apply -f redis-slave-service.yaml -n stless
+            
+   To verify service...
+   
+            kubectl get svc -o wide -n stless
+            
+   Now, we need to create **front-end application** and deploy.
+   
+            redis-frontend.yaml
+            
+            apiVersion: apps/v1
+            kind: Deployment
+            metadata:
+              name: frontend
+            spec:
+              selector:
+                matchLabels:
+                  app: guestbook
+                  tier: frontend
+              replicas: 3
+              template:
+                metadata:
+                  labels:
+                    app: guestbook
+                    tier: frontend
+                spec:
+                  containers:
+                  - name: php-redis
+                    image: gcr.io/google_samples/gb-frontend:v4
+                    resources:
+                      requests:
+                        memory: 100Mi
+                        cpu: 100m
+                    env:
+                    - name: GET_HOSTS_FROM
+                      value: dns 
+                    ports:
+                    - containerPort: 80
+                    
+   Deploy front-end app 
+   
+            kubectl apply -f redis-frontend.yaml -n stless
+            
+   Next, deploy front-end-service app
+   
+            redis-frontend-service.yaml
+            
+            apiVersion: v1
+            kind: Service 
+            metadata:
+              name: frontend
+              labels:
+                app: guestbook
+                tier: frontend
+            spec:
+              type: LoadBalancer
+              ports:
+              - port: 80
+              selector:
+                app: guestbook
+                tier: frontend
    
    
                 
