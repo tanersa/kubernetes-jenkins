@@ -568,7 +568,30 @@ To verify stateless app. go to AWS and Load Balancer:
          
          Go to description and copy DNS name and paste it to your browser.
          
-**Now, we deployed our first Stateless Application**         
+**Now, we deployed our first Stateless Application**  
+
+<br />
+
+**TO JUSTIFY THIS IS AN STATELESS APPLICATION:**
+
+Lets delete one of the  PODs...
+
+         kubectl delete po front-end-3434324323432-66
+         
+Go to browser and refresh the page...
+
+Application should be still up and running
+
+What happens is that **K8s Self Healing Mechanism** works perfect.
+
+   **Once worker node goes down, it automatically cordons so it deploys the pod to healthy worker node.**
+   
+However, data is gone because our application is **stateless**. We deleted worker node and once it's deleted, PODs get deleted as well. Therefore, we loose the data. 
+
+
+
+
+
             
    
                 
