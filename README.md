@@ -832,13 +832,11 @@ Let's create now our persistent volumes:
    
    We can also verify secrets on AWS Secret Manager. 
    
-   We would like to use PVC in **Statefulset**, so we dont want to delete them. Statefullset will give us a static POD name instead of random string all the time.  
+   We would like to use PVC in **Statefulset**, so we dont want to delete them. Statefullset will give us a static POD name instead of random string all the time. We will always get **STATIC** pod name. We already know the number to see PVC of the POD. 
    
-   For that, we deploy service and statefullset. 
+   -  Note: With statefulset, once we scale up our PODs, its going to create Persistent Volumes but we didnt see same result with deployment. If we deploy PODs on worker nodes, these nodes will have persistent storage. 
    
-           mysql-sts.yaml
-           
-            apiVersion: v1
+   
             kind: Service 
             metadata:
               name: wordpress-mysql
@@ -966,7 +964,11 @@ Let's create now our persistent volumes:
                       storage: 10Gi
                   storageClassName: statefull         
          
-         
+    To deploy above changes:
+    
+            kubectl apply -f mysql-sts.yaml -n sfull
+            
+               
          
          
          
